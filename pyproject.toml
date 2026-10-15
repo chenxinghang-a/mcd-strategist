@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcd-strategist"
+version = "1.0.0"
+description = "麦门军师 —— 基于麦当劳 MCP 的点餐决策 Skill：自动领券、智能比价、营养把关、一句话点餐"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "chenxinghang-a" }]
+keywords = ["mcdonalds", "mcp", "mcd", "agent", "skill", "workbuddy"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Utilities",
+]
+dependencies = ["requests>=2.31"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.urls]
+Homepage = "https://github.com/chenxinghang-a/mcd-strategist"
+Repository = "https://github.com/chenxinghang-a/mcd-strategist"
+
+[project.scripts]
+mcd = "mcd_strategist.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
