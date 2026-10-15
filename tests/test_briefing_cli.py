@@ -111,7 +111,7 @@ class TestCli:
         rc = main(["demo"])
         out = capsys.readouterr().out
         assert rc == 0
-        for marker in ("麦门日报", "省钱雷达", "一句话点餐", "营养把关", "演示结束"):
+        for marker in ("麦门日报", "省钱雷达", "一句话点餐", "营养把关", "积分抽奖", "演示结束"):
             assert marker in out
 
     def test_missing_token_falls_back_to_mock(self, capsys):

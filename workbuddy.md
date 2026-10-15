@@ -99,3 +99,85 @@
 > 保持与本文件前文一致的「可核验」风格：写清改了什么、怎么验证的、结论是什么。
 
 （以下由腾讯 WorkBuddy 会话补充）
+
+---
+
+## 附录 A · 真实开发会话：新增 `mcd lottery` 积分抽奖（2026-10-15）
+
+**会话环境**：腾讯 WorkBuddy（workbuddy.cn）桌面端 · Windows 11
+**会话时间**：2026-10-15 13:39 – 14:02（GMT+8）
+**迭代目标**：把 `MCP_INTEGRATION.md` 备注中"待接入"的**积分抽奖三件套**
+（`query-lottery-info` / `draw-lottery` / `query-my-prizes`）落地为 `mcd lottery` 子命令，
+补齐测试与文档，并把抽奖纳入 `mcd demo` 全流程演示。
+
+### 一、起点确认（只读）
+
+1. 通读 `cli.py` / `mcp_client.py` / `mockserver.py` / `briefing.py` 与全部测试文件；
+2. 确认 mock 端三件套已就绪（`mockserver.py` 的 `_tool_query_lottery_info` /
+   `_tool_draw_lottery` / `_tool_query_my_prizes`）；`query-lottery-info` 此前仅被
+   「麦门日报」用作只读展示；
+3. 设计沿用 `order` 已建立的约定：**消耗积分的写操作默认 dry-run，`--confirm` 才真实执行**。
+
+### 二、实际改动（本次会话产出）
+
+| 文件 | 改动 |
+|---|---|
+| `src/mcd_strategist/lottery.py` | **新增**（约 130 行）：`LotteryStatus` 数据类 + `lottery_status()` / `my_prizes()` / `draw_once()`；容错分层（活动信息失败抛出；余额/奖品失败降级不阻断） |
+| `src/mcd_strategist/cli.py` | 新增 `cmd_lottery`（三种模式 + `--json`）；注册 `lottery` 子命令；`mcd demo` 由 4 段扩为 **5 段**（新增积分抽奖演示） |
+| `tests/test_lottery.py` | **新增** 10 个用例（模块层 5 + CLI 层 5；含 dry-run 不执行、余额读取失败容错、`--confirm` 缺 `--draw` 时 exit 2 等边界） |
+| `tests/test_briefing_cli.py` | demo 全流程断言加入「积分抽奖」标记 |
+| `MCP_INTEGRATION.md` | 工具清单 13→**15 个**、新增「3.4 积分抽奖」调用链、备注同步 |
+| `README.md` | 能力表新增 `mcd lottery` 一行 |
+
+### 三、执行过的关键命令（本会话实录）
+
+```text
+$ python -m pip install -e ".[dev]"        # 腾讯源
+  Successfully installed ... mcd-strategist-1.0.0 pytest-9.1.1
+
+$ python -m pytest tests/test_lottery.py -q
+  10 passed in 0.38s
+
+$ python -m pytest -q
+  88 passed in 2.17s        # 会话前基线 78 passed（见上文体测记录），本次 +10
+
+$ mcd --mock lottery --draw
+  🎰 积分抽奖 · 进行中
+  每次消耗：100 积分（当前可用积分：2860）
+  奖池：巨无霸免费兑换券 / 50 积分 / 薯条(小)
+  🎁 我的奖品：暂无
+  [dry-run] 将消耗 100 积分抽一次；确认真实抽奖请加 --confirm。
+
+$ mcd --mock lottery --draw --confirm
+  🎰 积分抽奖 · 进行中
+  ...
+  😢 未中奖（消耗 100 积分）—— 再来一次？     # mock 固定未中奖，保证测试可复现
+
+$ mcd demo
+  >>> 5/5 积分抽奖
+  🎰 积分抽奖 · 进行中
+  每次消耗：100 积分（当前可用积分：2860）
+  奖池：巨无霸免费兑换券 / 50 积分 / 薯条(小)
+  抽一次：😢 未中奖（消耗 100 积分）
+```
+
+### 四、本次会话中的 MCP 工具调用（mock 层，如实标注）
+
+| 工具 | 调用场景 | 说明 |
+|---|---|---|
+| `query-lottery-info` | `mcd lottery` 进入时 | mock 返回 `{status: 进行中, cost: 100, prizes: [...]}` |
+| `query-my-account` | 抽奖前余额判定 | 余额读取失败时容错放行（不因账户服务抖动阻断命令） |
+| `draw-lottery` | 仅 `--draw --confirm` | mock 固定返回未中奖；**真实扣积分由服务端裁决** |
+| `query-my-prizes` | 进入时展示 / 抽奖后刷新 | 当前为空列表 |
+
+> 本次会话在**无 `MCD_MCP_TOKEN`** 环境下进行（与上文体测一致），所有调用均走内置 mock；
+> 取得 Token 后 `mcd lottery --draw --confirm` 无需改动即可直连真实 MCP。
+
+### 五、结论（可核验）
+
+- 全量离线测试 **88 passed**（+10），无回归；
+- `mcd lottery` 三模式（查询 / dry-run / `--confirm` 真实抽）行为符合设计；
+- 写操作安全边界与 `order` 一致：**默认零消耗，显式确认才触达 `draw-lottery`**；
+- 文档（README / MCP_INTEGRATION）与实际行为一致，工具清单更新为 15 个。
+
+---

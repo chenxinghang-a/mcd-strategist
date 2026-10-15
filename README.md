@@ -24,6 +24,7 @@
 | 🧾 **一句话点餐** | `mcd order "来份巨无霸套餐加薯条"` | 自然语言解析 → 选店 → 计价，**默认 dry-run**，`--confirm` 才真实 `create-order` |
 | 🥗 **营养把关** | `mcd nutrition 麦辣鸡腿堡套餐` | 基于 `list-nutrition-foods` 的能量/钠/脂肪阈值评估 + 同类替换建议 |
 | 📰 **麦门日报** | `mcd brief` | 活动日历 + 可领券 + 积分 + 积分抽奖，一站式早报 |
+| 🎰 **积分抽奖** | `mcd lottery` | 活动状态 + 奖池 + 我的奖品；`--draw` 抽奖（默认 dry-run，`--confirm` 才真实消耗积分） |
 | 🛠️ **连通自检** | `mcd tools` | 列出麦当劳 MCP 全部 33 个工具 |
 | 🎬 **离线演示** | `mcd demo` | 没有 Token 也能预览全部能力（内置模拟 MCP） |
 

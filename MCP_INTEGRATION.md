@@ -23,7 +23,7 @@
 - 429 尊重 `Retry-After` 并退避重试；5xx 指数退避；401 立即抛出 `UnauthorizedError`；
 - 客户端令牌桶默认 8 QPS（官方 10 QPS 上限的 80%），防止把配额打满。
 
-## 2. 使用的 Tool 清单（共 10 个）
+## 2. 使用的 Tool 清单（共 15 个）
 
 | Tool | 用途 | 调用场景 | 关键入参 |
 |---|---|---|---|
@@ -39,9 +39,11 @@
 | `campaign-calendar` | 当月营销活动日历 | 麦门日报 | — |
 | `now-time-info` | 当前时间 | 麦门日报（让 LLM/用户对齐时间） | — |
 | `query-my-account` | 积分账户（可用/累计/将过期） | 麦门日报 | — |
-| `query-lottery-info` | 积分抽奖活动信息 | 麦门日报 | — |
+| `query-lottery-info` | 积分抽奖活动信息 | 麦门日报 / `mcd lottery` | — |
+| `draw-lottery` | 积分抽奖（消耗积分，写操作） | `mcd lottery --draw --confirm` | — |
+| `query-my-prizes` | 我的奖品列表 | `mcd lottery`（展示与抽后刷新） | — |
 
-> 注：麦当劳 MCP 目前共开放 33 个 Tool（完整清单可执行 `mcd --mock tools` 查看，mock 清单与官方公布一一对应）。上表 13 个即本项目真实调用的全部 Tool；其余 20 个（商城兑换、主题活动、抽奖执行等）作为能力的自然延伸保留在 mock 清单与文档中，欢迎在 Issues 里提名下一个要接入的。
+> 注：麦当劳 MCP 目前共开放 33 个 Tool（完整清单可执行 `mcd --mock tools` 查看，mock 清单与官方公布一一对应）。上表 15 个即本项目真实调用的全部 Tool；其余 18 个（商城兑换、主题活动等）作为能力的自然延伸保留在 mock 清单与文档中，欢迎在 Issues 里提名下一个要接入的。
 
 ## 3. 三条核心调用链
 
@@ -88,6 +90,21 @@ query-lottery-info ───────► 积分抽奖活动与奖品
 ```
 
 每个板块独立容错：单个 Tool 失败只丢失该板块，不影响整份日报。
+
+### 3.4 积分抽奖（`mcd lottery`）
+
+```
+query-lottery-info ───────► 活动状态 / 每次消耗 / 奖池
+query-my-account ─────────► 积分余额（可抽与否的判定依据；读取失败则容错放行）
+draw-lottery ─────────────► [仅 --draw --confirm] 真实抽奖（消耗积分）
+query-my-prizes ──────────► 我的奖品（进入时展示，抽奖后刷新）
+```
+
+安全边界（与 `order` 同款约定）：
+
+- **默认只读**：`mcd lottery` 不产生任何消耗；
+- **dry-run**：`--draw` 只提示"将消耗 X 积分"，**不**调用 `draw-lottery`；
+- **真实执行**：`--draw --confirm` 才调用 `draw-lottery`；积分不足时直接拒绝（exit 2）。
 
 ## 4. 错误处理策略
 

@@ -4,6 +4,7 @@
   radar      省钱雷达（默认场景）
   order      一句话点餐（默认 dry-run，--confirm 才真实下单）
   cancel     取消订单
+  lottery    积分抽奖（默认查询；--draw --confirm 才真实消耗积分）
   brief      麦门日报
   nutrition  营养把关
   tools      列出麦当劳 MCP 全部工具（连通性自检）
@@ -22,6 +23,7 @@ from typing import Any, Dict, List, Optional
 
 from . import __version__
 from .briefing import daily_brief
+from .lottery import draw_once, lottery_status, my_prizes
 from .mcp_client import McpClient, McpError
 from .mockserver import MockMcpClient
 from .models import extract_meals, extract_nutrition, pick
@@ -155,6 +157,56 @@ def cmd_cancel(args: argparse.Namespace) -> int:
     return 0
 
 
+# ---------------------------------------------------------------- lottery
+
+
+def cmd_lottery(args: argparse.Namespace) -> int:
+    if args.confirm and not args.draw:
+        print("拒绝执行：--confirm 需与 --draw 一起使用。", file=sys.stderr)
+        return 2
+
+    client = make_client(args)
+    status = lottery_status(client)
+    owned = my_prizes(client)
+
+    drawn: Optional[dict] = None
+    if args.draw and args.confirm:
+        if not status.affordable():
+            print(
+                f"拒绝抽奖：积分不足（需要 {status.cost}，当前可用 {status.available_points}）。",
+                file=sys.stderr,
+            )
+            return 2
+        drawn = draw_once(client)
+        owned = my_prizes(client)
+
+    data = {
+        "lottery": status.to_dict(),
+        "myPrizes": owned,
+        "draw": drawn,
+        "dryRun": bool(args.draw and not args.confirm),
+    }
+
+    def render() -> None:
+        print("🎰 积分抽奖" + (f" · {status.status}" if status.status else ""))
+        if status.cost:
+            quota = f"（当前可用积分：{status.available_points}）" if status.account_ok else ""
+            print(f"每次消耗：{status.cost} 积分{quota}")
+        if status.prizes:
+            print("奖池：" + " / ".join(status.prizes))
+        print("\n🎁 我的奖品：" + ("、".join(owned) if owned else "暂无"))
+        if args.draw and not args.confirm:
+            print(f"\n[dry-run] 将消耗 {status.cost} 积分抽一次；确认真实抽奖请加 --confirm。")
+        if drawn is not None:
+            if drawn["win"]:
+                print(f"\n🎉 恭喜！抽中：{drawn['prize'] or '奖品'}（消耗 {drawn['costPaid']} 积分）")
+            else:
+                print(f"\n😢 未中奖（消耗 {drawn['costPaid']} 积分）—— 再来一次？")
+
+    _emit(data, args.json, render)
+    return 0
+
+
 # ---------------------------------------------------------------- brief
 
 
@@ -260,10 +312,10 @@ def cmd_demo(args: argparse.Namespace) -> int:
     print("🎬 麦门军师 · 离线演示（--mock，数据为演示用模拟数据）")
     print("=" * 62)
 
-    print("\n>>> 1/4 麦门日报\n")
+    print("\n>>> 1/5 麦门日报\n")
     print(daily_brief(client))
 
-    print("\n>>> 2/4 省钱雷达：预算 ¥30\n")
+    print("\n>>> 2/5 省钱雷达：预算 ¥30\n")
     report = plan_radar(client, 30.0, max_rows=3, bind_coupons=True)
     for i, row in enumerate(report.rows[:3], 1):
         print(
@@ -272,7 +324,7 @@ def cmd_demo(args: argparse.Namespace) -> int:
             + (f"｜约 {row.kcal:.0f} kcal" if row.kcal else "")
         )
 
-    print("\n>>> 3/4 一句话点餐（dry-run）\n")
+    print("\n>>> 3/5 一句话点餐（dry-run）\n")
     plan = draft_order(client, "来一份巨无霸套餐，再加个薯条")
     print(f"识别：{plan.describe()}")
     if plan.price:
@@ -280,7 +332,7 @@ def cmd_demo(args: argparse.Namespace) -> int:
     for note in plan.notes:
         print(f"· {note}")
 
-    print("\n>>> 4/4 营养把关\n")
+    print("\n>>> 4/5 营养把关\n")
     menu = extract_meals(client.call_tool("query-meals", {}))
     by_code = {n.code: n for n in extract_nutrition(client.call_tool("list-nutrition-foods", {}))}
     from .ordering import parse_text
@@ -292,6 +344,19 @@ def cmd_demo(args: argparse.Namespace) -> int:
     names = {m.code: m.name for m in menu}
     for s in swap_suggestions(by_code["B0101"], list(by_code.values()), limit=2):
         print(f"🔁 可换：{names.get(s.code, s.code) or s.name}（{s.energy_kcal:.0f} kcal）")
+
+    print("\n>>> 5/5 积分抽奖\n")
+    st = lottery_status(client)
+    print("🎰 积分抽奖" + (f" · {st.status}" if st.status else ""))
+    if st.cost:
+        print(f"每次消耗：{st.cost} 积分（当前可用积分：{st.available_points}）")
+    if st.prizes:
+        print("奖池：" + " / ".join(st.prizes))
+    result = draw_once(client)
+    if result["win"]:
+        print(f"抽一次：🎉 抽中 {result['prize']}（消耗 {result['costPaid']} 积分）")
+    else:
+        print(f"抽一次：😢 未中奖（消耗 {result['costPaid']} 积分）")
 
     print("\n" + "=" * 62)
     print("演示结束。真实使用：申请 Token 后 mcd radar --budget 30")
@@ -333,6 +398,11 @@ def build_parser() -> argparse.ArgumentParser:
     sp = sub.add_parser("cancel", help="取消订单")
     sp.add_argument("order_id", help="订单号")
     sp.set_defaults(func=cmd_cancel)
+
+    sp = sub.add_parser("lottery", help="积分抽奖（默认查询；--draw 抽奖，默认 dry-run）")
+    sp.add_argument("--draw", action="store_true", help="发起抽奖（消耗积分；--confirm 才真实执行）")
+    sp.add_argument("--confirm", action="store_true", help="确认真实抽奖（消耗积分）")
+    sp.set_defaults(func=cmd_lottery)
 
     sp = sub.add_parser("nutrition", help="营养把关")
     sp.add_argument("text", nargs="*", help="餐品名称，例如：麦辣鸡腿堡套餐")
