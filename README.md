@@ -114,7 +114,7 @@ mcd_strategist/
 
 ## 🔌 麦当劳 MCP 使用情况
 
-本项目真实调用麦当劳 MCP（`https://mcp.mcd.cn`）的工具共 **13 个**，覆盖点餐全链路。每个工具的用途、参数与调用时机详见 [MCP_INTEGRATION.md](MCP_INTEGRATION.md)。
+本项目真实调用麦当劳 MCP（`https://mcp.mcd.cn`）的工具共 **15 个**，覆盖点餐全链路。每个工具的用途、参数与调用时机详见 [MCP_INTEGRATION.md](MCP_INTEGRATION.md)。
 
 | 场景 | 使用的 Tool |
 |---|---|
@@ -122,6 +122,7 @@ mcd_strategist/
 | 一键领券 | `auto-bind-coupons` |
 | 一句话点餐 | `query-meals` `query-nearby-stores` `calculate-price` `create-order` `cancel-order` |
 | 麦门日报 | `now-time-info` `campaign-calendar` `available-coupons` `query-my-account` `query-lottery-info` |
+| 积分抽奖 | `query-lottery-info` `draw-lottery` `query-my-prizes` |
 
 ## 🛡️ 安全与免责
 
