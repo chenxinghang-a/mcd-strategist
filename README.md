@@ -71,6 +71,8 @@ mcd nutrition 巨无霸套餐             # 营养把关
 
 ## 🎬 演示输出（离线 mock 数据）
 
+![mcd demo 终端演示](docs/demo-terminal.svg)
+
 ```
 $ mcd demo
 >>> 2/5 省钱雷达：预算 ¥30

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 372" width="680" height="372" role="img" aria-label="mcd demo 终端演示">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#22262f"/>
+      <stop offset="100%" stop-color="#1b1f27"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="680" height="372" rx="10" fill="url(#bg)" stroke="#3a4150" stroke-width="1"/>
+  <path d="M0 36 H680" stroke="#3a4150" stroke-width="1"/>
+  <circle cx="22" cy="18" r="5.5" fill="#ff5f57"/>
+  <circle cx="42" cy="18" r="5.5" fill="#febc2e"/>
+  <circle cx="62" cy="18" r="5.5" fill="#28c840"/>
+  <text x="340" y="23" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12" fill="#8b93a7" text-anchor="middle">mcd demo — 麦门军师</text>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13">
+
+    <text x="20" y="66" fill="#98c379">$</text>
+    <text x="36" y="66" fill="#e6e9f0">mcd demo</text>
+
+    <text x="20" y="96" fill="#56b6c2">&gt;&gt;&gt; 2/5 省钱雷达：预算 ¥30</text>
+
+    <text x="20" y="122" fill="#abb2bf">1. 麦香鱼</text>
+    <text x="107" y="122" fill="#6b7383">｜券：麦麦省8.8折券｜原价 </text>
+    <text x="292" y="122" fill="#abb2bf">¥11.50</text>
+    <text x="336" y="122" fill="#6b7383"> → 实付 </text>
+    <text x="392" y="122" fill="#98c379" font-weight="bold">¥10.12</text>
+    <text x="440" y="122" fill="#6b7383">｜约 390 kcal</text>
+
+    <text x="20" y="146" fill="#abb2bf">2. 板烧鸡腿堡</text>
+    <text x="129" y="146" fill="#6b7383">｜券：麦麦省8.8折券｜原价 </text>
+    <text x="314" y="146" fill="#abb2bf">¥13.00</text>
+    <text x="358" y="146" fill="#6b7383"> → 实付 </text>
+    <text x="414" y="146" fill="#98c379" font-weight="bold">¥11.44</text>
+    <text x="462" y="146" fill="#6b7383">｜约 480 kcal</text>
+
+    <text x="20" y="170" fill="#abb2bf">3. 麦辣鸡腿堡</text>
+    <text x="129" y="170" fill="#6b7383">｜券：麦麦省8.8折券｜原价 </text>
+    <text x="314" y="170" fill="#abb2bf">¥13.50</text>
+    <text x="358" y="170" fill="#6b7383"> → 实付 </text>
+    <text x="414" y="170" fill="#98c379" font-weight="bold">¥11.88</text>
+    <text x="462" y="170" fill="#6b7383">｜约 590 kcal</text>
+
+    <text x="20" y="200" fill="#56b6c2">&gt;&gt;&gt; 3/5 一句话点餐（dry-run）</text>
+
+    <text x="20" y="226" fill="#6b7383">识别：</text>
+    <text x="64" y="226" fill="#e6e9f0">巨无霸套餐×1、薯条(小)×1</text>
+
+    <text x="20" y="250" fill="#6b7383">原价 </text>
+    <text x="64" y="250" fill="#abb2bf">¥34.50</text>
+    <text x="108" y="250" fill="#6b7383"> → 实付 </text>
+    <text x="164" y="250" fill="#abb2bf">¥34.50</text>
+
+    <text x="20" y="274" fill="#6b7383">· dry-run 完成：未创建订单。加 </text>
+    <text x="284" y="274" fill="#e5c07b">--confirm</text>
+    <text x="352" y="274" fill="#6b7383"> 才会真正下单。</text>
+
+    <text x="20" y="304" fill="#56b6c2">&gt;&gt;&gt; 5/5 积分抽奖</text>
+
+    <text x="20" y="330" fill="#abb2bf">🎰 积分抽奖 · 进行中</text>
+    <text x="212" y="330" fill="#6b7383">每次消耗：</text>
+    <text x="276" y="330" fill="#e5c07b">100</text>
+    <text x="308" y="330" fill="#6b7383"> 积分（当前可用 </text>
+    <text x="412" y="330" fill="#abb2bf">2860</text>
+    <text x="448" y="330" fill="#6b7383">）</text>
+  </g>
+</svg>
